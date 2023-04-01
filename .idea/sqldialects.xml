@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/dbHelper/interset.go" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/000001_create_table.down.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/000001_create_table.up.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/operation/address.go" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/operation/table.go" dialect="GenericSQL" />
+  </component>
+</project>
