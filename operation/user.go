@@ -100,22 +100,22 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func GetUserById(w http.ResponseWriter, r *http.Request) {
 	// reading user id from path parameters
-	id := mux.Vars(r)["id"]
+	userId := mux.Vars(r)["userId"]
 	// check the id is of uuid type or not
-	if _, uuidErr := uuid.Parse(id); uuidErr != nil {
+	if _, uuidErr := uuid.Parse(userId); uuidErr != nil {
 		logrus.Error("Failed to parse the user id to uuid", uuidErr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	// get the user by id
-	user, err := dbHelper.GetUserByID(&id)
+	user, err := dbHelper.GetUserByID(&userId)
 	if err != nil {
 		logrus.Error("failed to getUser")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// get the userInterest by user_id
-	interest, err := dbHelper.GetInterestByUserId(&id)
+	interest, err := dbHelper.GetInterestByUserId(&userId)
 	if err != nil {
 		logrus.Error("failed to getInterest the user")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -178,21 +178,21 @@ func GetAllUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserDelete(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	if _, uuidErr := uuid.Parse(id); uuidErr != nil {
+	userId := mux.Vars(r)["userId"]
+	if _, uuidErr := uuid.Parse(userId); uuidErr != nil {
 		logrus.Error("UserDelete: Failed to parse the user id")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	// delete the user by id
-	err := dbHelper.DeleteUser(&id)
+	err := dbHelper.DeleteUser(&userId)
 	if err != nil {
 		logrus.Error("Failed to  delete user", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// delete the userInterest by userId
-	err = dbHelper.DeleteInterest(&id)
+	err = dbHelper.DeleteInterest(&userId)
 	if err != nil {
 		logrus.Error("Failed to  delete interest", err)
 		w.WriteHeader(http.StatusInternalServerError)

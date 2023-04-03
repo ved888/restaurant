@@ -36,8 +36,8 @@ type UserInterest struct {
 type UserInterestRequest struct {
 	User         Users        `json:"user"`
 	Interest     Interest     `json:"interest"`
-	Address      Address      `json:"address"`
 	UserInterest UserInterest `json:"-"`
+	//Address      Address      `json:"-"`
 	//InterestUser InterestUser `json:"-"`
 }
 
