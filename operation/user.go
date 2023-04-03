@@ -73,22 +73,22 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// read the user id from the path params
-	id := mux.Vars(r)["id"]
+	userId := mux.Vars(r)["userId"]
 	// check the id is of uuid type or not
-	if _, uuidErr := uuid.Parse(id); uuidErr != nil {
+	if _, uuidErr := uuid.Parse(userId); uuidErr != nil {
 		logrus.Error("Failed to parse the user id to uuid", uuidErr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	// update the user entry by id
-	err = dbHelper.UpdateUser(&usersRequest.User, id)
+	err = dbHelper.UpdateUser(&usersRequest.User, userId)
 	if err != nil {
 		logrus.Error("failed to update the user entry", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// update the interest entry by userId
-	err = dbHelper.UpdateInterest(&usersRequest.Interest, id)
+	err = dbHelper.UpdateInterest(&usersRequest.Interest, userId)
 	if err != nil {
 		logrus.Error("failed to update the interest entry", err)
 		w.WriteHeader(http.StatusInternalServerError)
