@@ -64,7 +64,7 @@ func GetTableByBookingId(bookingId string) (*model.ResTable, error) {
                   bt.booking_id
               FROM 
                   res_table t join booking_table bt on  
-                      t.id=bt.rest_table_id
+                      t.id = bt.rest_table_id
               where bt.booking_id=$1::uuid`
 
 	err := common.DB.Get(&table, sql, bookingId)
@@ -79,8 +79,8 @@ func UpdateTable(table *model.ResTable, tableId *string) error {
 	// language=sql
 	sql := `UPDATE res_table
                    set
-                       code=$1,
-                       capacity=$2,
+                       code=COALESCE($1,code),
+                       capacity=COALESCE($2,capacity),
                        updated_at=now()
                where id=$3`
 

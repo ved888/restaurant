@@ -95,11 +95,13 @@ func GetAllBooking() ([]*model.Booking, error) {
 	// language=SQL
 
 	SQL := `SELECT 
-                id,
-                booking_date,
-                pre_advance_booking
+                b.id,
+                b.booking_date,
+                b.pre_advance_booking,
+                ub.users_id
            FROM
-                booking`
+                booking b join user_booking ub on  
+                    b.id=ub.booking_id`
 
 	err := common.DB.Select(&booking, SQL)
 	return booking, err
@@ -110,8 +112,8 @@ func UpdateBooking(booking *model.Booking, bookingId, userId string) error {
 	// language=SQL
 	SQL := `UPDATE booking
              SET 
-                 booking_date=$1,
-                 pre_advance_booking=$2,
+                 booking_date=COALESCE($1,booking_date),
+                 pre_advance_booking=COALESCE($2,pre_advance_booking),
                  updated_at=now()
           where id=$3 ::uuid`
 

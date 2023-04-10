@@ -24,6 +24,20 @@ func CreateUserInterest(db *sqlx.Tx, userInterest *model.UserInterest) (*uuid.UU
 
 }
 
+func UpdateUserInterest(db *sqlx.Tx, userInterest model.UserInterest, usersId string) error {
+	// language sql
+
+	sql := `update  relation_table
+    set
+								 users_id=$1,
+                                interest_id=$2,
+                               updated_at=now()      
+            where id in (select id from relation_table where users_id = $3)`
+
+	_, err := db.Exec(sql, userInterest.UsersId, userInterest.InterestId, &usersId)
+	return err
+
+}
 func GetAllUserInterest() ([]*model.Interest, error) {
 	var interest []*model.Interest
 	// language=sql

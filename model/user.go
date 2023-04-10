@@ -13,6 +13,7 @@ type Users struct {
 	LastName   string    `json:"lastName" db:"last_name" validate:"required"`
 	Phone      string    `json:"phone" db:"phone" validate:"required"`
 	EmailId    string    `json:"emailId" db:"email_id" validate:"required,email"`
+	Password   string    `json:"-"`
 	CreatedAt  time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt  null.Time `json:"updatedAt" db:"updated_at"`
 	DeletedAt  null.Time `json:"deletedAt" db:"deleted_at"`
@@ -37,8 +38,7 @@ type UserInterestRequest struct {
 	User         Users        `json:"user"`
 	Interest     Interest     `json:"interest"`
 	UserInterest UserInterest `json:"-"`
-	//Address      Address      `json:"-"`
-	//InterestUser InterestUser `json:"-"`
+	//	InterestUser InterestUser `json:"-"`
 }
 
 type InterestUser struct {

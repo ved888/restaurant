@@ -9,6 +9,7 @@ import (
 )
 
 func CreateAddress(db *sqlx.Tx, address *model.Address) (*string, error) {
+
 	// language=SQL
 	SQL := `INSERT INTO address(
                     line1,
@@ -28,6 +29,7 @@ func CreateAddress(db *sqlx.Tx, address *model.Address) (*string, error) {
 }
 
 func CreateUserAddress(db *sqlx.Tx, userID, AddressID string) (*uuid.UUID, error) {
+
 	// language sql
 	sql := `INSERT INTO user_address(
                          users_id,
@@ -44,8 +46,8 @@ func CreateUserAddress(db *sqlx.Tx, userID, AddressID string) (*uuid.UUID, error
 func GetAllAddress() ([]*model.Address, error) {
 
 	address := make([]*model.Address, 0)
-	// language=SQL
 
+	// language=SQL
 	SQL := `SELECT 
                  id,
                  line1, 
@@ -65,7 +67,6 @@ func GetAddressByAddressId(addressId *string) (*model.Address, error) {
 	var address model.Address
 
 	// language sql
-
 	sql := `select  
                  id,
                  line1, 
@@ -89,7 +90,6 @@ func GetAddressByUserId(userId *string) (*model.Address, error) {
 	var address model.Address
 
 	// language sql
-
 	sql := `select  
                  a.id,
                  a.line1, 
@@ -116,17 +116,16 @@ func UpdateAddress(address *model.Address, addressId, userId string) error {
 	// language=SQL
 	SQL := `update address
                   set
-                      line1=$1,
-                      line2=$2,
-                      pin_code=$3,
-                      city=$4,
-                      state=$5,
-                      country=$6,
+                      line1=COALESCE($1,line1),
+                      line2=COALESCE($2,line2),
+                      pin_code=COALESCE($3,pin_code),
+                      city=COALESCE($4,city),
+                      state=COALESCE($5,state),
+                      country=COALESCE($6,country),
                       updated_at=now()
                where id = $7`
 
 	args := []interface{}{address.Line1, address.Line2, address.PinCode, address.City, address.State, address.Country, addressId}
-
 	_, err := common.DB.Exec(SQL, args...)
 	return err
 }
@@ -154,6 +153,7 @@ func DeleteAddressByUserId(userId *string) error {
             set
             deleted_at =now()
             where id in (select users_id from user_address where users_id=$1) `
+
 	_, err := common.DB.Exec(SQL, userId)
 	return err
 

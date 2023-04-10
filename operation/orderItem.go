@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"restaurant/common"
@@ -18,15 +19,17 @@ func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&orderItem)
 	if err != nil {
-		logrus.Error("error in decode create orderItem", err)
+		logrus.Error("CreateOrderItem: Failed to decode create orderItem", err)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "CreateOrderItem: Failed to decode create orderItem", nil)
 		return
 	}
+
 	// read the orderId from query param
 	orderId := r.URL.Query().Get("orderId")
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(orderId); uuidErr != nil {
-		logrus.Error("Failed to parse the order id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("CreateOrderItem: Failed to parse the order id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "CreateOrderItem: Failed to parse the order id to uuid", nil)
 		return
 	}
 
@@ -34,8 +37,8 @@ func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
 	foodId := r.URL.Query().Get("foodId")
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(foodId); uuidErr != nil {
-		logrus.Error("Failed to parse the food id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("CreateOrderItem: Failed to parse the food id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "CreateOrderItem: Failed to parse the food id to uuid", nil)
 		return
 	}
 
@@ -48,86 +51,93 @@ func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
 		responseBody := map[string]string{"error": validationErrors.Error()}
 		logrus.Error(responseBody)
 		if err := json.NewEncoder(w).Encode(responseBody); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
 	}
+
 	txErr := common.Tx(func(tx *sqlx.Tx) error {
 		// create the orderItem entry
-		orderItemId, err := dbHelper.CreateOrderItem(tx, &orderItem)
-		if err != nil {
-			return err
+		orderItemId, orderItemErr := dbHelper.CreateOrderItem(tx, &orderItem)
+		if orderItemErr != nil {
+			return errors.Wrap(orderItemErr, "CreateUser: failed to create the orderItem entry")
 		}
 
 		//create the order orderItem relation entry
 		_, err = dbHelper.CreateOrderOrderItem(tx, orderId, *orderItemId)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "CreateUser: failed to create the orderItem order relation entry")
 		}
 
 		//create the food orderItem relation entry
 		_, err = dbHelper.CreateFoodOrderItem(tx, foodId, *orderItemId)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "CreateUser: failed to create the orderItem food relation entry")
 		}
 		return nil
 	})
 	if txErr != nil {
-		logrus.Error("failed to create billing for the user", txErr)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("CreateOrderItem: failed to create orderItem entry", txErr)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "CreateOrderItem: failed to create orderItem entry", nil)
 		return
 	}
+	common.ReturnResponse(w, "success", http.StatusCreated, "", orderItem)
 
-	w.WriteHeader(http.StatusCreated)
+	//w.WriteHeader(http.StatusCreated)
 }
 
 func GetOrderItemById(w http.ResponseWriter, r *http.Request) {
 	// read the orderItem id from path param
 	id := mux.Vars(r)["id"]
 	if id == "" { // checking orderItem empty or not
-		logrus.Error("orderItemId is empty")
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("GetOrderItemById: orderItemId is empty")
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "GetOrderItemById: orderItemId is empty", nil)
 		return
 	}
+
 	// get the orderItem by id
 	resp, err := dbHelper.GetOrderItemById(id)
 	if err != nil {
-		logrus.Error("failed to get orderItem by id", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetOrderItemById: failed to get orderItem by id", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetOrderItemById: failed to get orderItem by id", nil)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(&resp)
-	if err != nil {
-		logrus.Error("failed to encode the orderItem ", err)
-		return
-	}
+	//err = json.NewEncoder(w).Encode(&resp)
+	//if err != nil {
+	//	logrus.Error("GetOrderItemById: failed to encode the orderItem ", err)
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	return
+	//}
+	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func GetOrderItemByOrderId(w http.ResponseWriter, r *http.Request) {
 	// read the orderItem id from path param
 	OrderId := mux.Vars(r)["orderId"]
 	if OrderId == "" { // checking orderItem empty or not
-		logrus.Error("orderItemId is empty")
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("GetOrderItemByOrderId: orderItemId is empty")
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "GetOrderItemByOrderId: orderItemId is empty", nil)
 		return
 	}
+
 	// get the orderItem by id
 	resp, err := dbHelper.GetOrderItemByOrderId(OrderId)
 	if err != nil {
-		logrus.Error("failed to get orderItem by id", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetOrderItemByOrderId: failed to get orderItem by id", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetOrderItemByOrderId: failed to get orderItem by id", nil)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(&resp)
-	if err != nil {
-		logrus.Error("failed to encode the orderItem ", err)
-		return
-	}
+	//err = json.NewEncoder(w).Encode(&resp)
+	//if err != nil {
+	//	logrus.Error("GetOrderItemByOrderId: failed to encode the orderItem ", err)
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	return
+	//}
+	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func GetAllOrderItem(w http.ResponseWriter, r *http.Request) {
@@ -135,15 +145,18 @@ func GetAllOrderItem(w http.ResponseWriter, r *http.Request) {
 	// get all the orderItem list
 	orderItemList, err := dbHelper.GetAllOrderItem()
 	if err != nil {
-		logrus.Error("error in getAll orderItem query", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetAllOrderItem: failed to getAll orderItem entry", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetAllOrderItem: failed to getAll orderItem entry", nil)
 		return
 	}
-	err = json.NewEncoder(w).Encode(orderItemList)
-	if err != nil {
-		logrus.Error("error in encode getAll orderItem", err)
-		return
-	}
+
+	//err = json.NewEncoder(w).Encode(orderItemList)
+	//if err != nil {
+	//	logrus.Error("GetAllOrderItem: failed to encode getAll orderItem", err)
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	return
+	//}
+	common.ReturnResponse(w, "success", http.StatusOK, "", orderItemList)
 
 }
 func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
@@ -151,23 +164,26 @@ func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&orderItem)
 	if err != nil {
-		logrus.Error("error in decode update orderItem ", err)
+		logrus.Error("UpdateOrderItem: failed to decode update orderItem ", err)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "UpdateOrderItem: failed to decode update orderItem", nil)
 		return
 	}
+
 	// read the orderItem id from the path params
 	id := mux.Vars(r)["id"]
 
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(id); uuidErr != nil {
-		logrus.Error("Failed to parse the user id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("UpdateOrderItem: Failed to parse the user id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "UpdateOrderItem: Failed to parse the user id to uuid", nil)
 		return
 	}
+
 	// update the orderItem entry by id
 	err = dbHelper.UpdateOrderItem(&orderItem, id)
 	if err != nil {
-		logrus.Error("error in update orderItem ", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("UpdateOrderItem: failed to update orderItem ", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateOrderItem: failed to update orderItem", nil)
 		return
 	}
 
@@ -180,16 +196,18 @@ func DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
 
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(id); uuidErr != nil {
-		logrus.Error("Failed to parse the user id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("DeleteOrderItem: Failed to parse the user id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "DeleteOrderItem: Failed to parse the user id to uuid", nil)
 		return
 	}
+
 	// delete the orderItem entry by id from path params
 	err := dbHelper.DeleteOrderItem(&id)
 	if err != nil {
-		logrus.Error("error in delete orderItem ", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("DeleteOrderItem: Failed to delete orderItem", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteOrderItem: Failed to delete orderItem", nil)
 		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
 }

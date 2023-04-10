@@ -7,7 +7,7 @@ import (
 )
 
 type OrderItem struct {
-	Id        uuid.UUID `json:"id" db:"db"`
+	Id        uuid.UUID `json:"id" db:"id"`
 	Price     int       `json:"price" db:"price" validate:"required"`
 	Quantity  int       `json:"quantity" db:"quantity" validate:"required"`
 	OrderId   uuid.UUID `json:"orderId" db:"order_id"`

@@ -9,7 +9,7 @@ import (
 
 func CreateOrder(db *sqlx.Tx, order *model.Orders) (*string, error) {
 
-	//language=SQL
+	// language=SQL
 	sql := `INSERT INTO orders(
                       item_discount,
                       tax,
@@ -44,6 +44,7 @@ func GetOrderById(orderId *string) (*model.Orders, error) {
 
 	// language sql
 	sql := `SELECT 
+                  id,
                   item_discount,
                   tax,
                   shipping,
@@ -63,6 +64,7 @@ func GetOrderByUserId(userId *string) (*model.Orders, error) {
 
 	// language sql
 	sql := `SELECT 
+                  o.id,
                   o.item_discount,
                   o.tax,
                   o.shipping,
@@ -84,13 +86,13 @@ func GetAllOrder() ([]*model.Orders, error) {
 	orders := make([]*model.Orders, 0)
 	// language=SQL
 	SQL := `SELECT 
-                  users_id,
+                  id,
                   item_discount,
                   tax,
                   shipping,
                   total
-           from
-               orders`
+              from
+                  orders`
 
 	err := common.DB.Select(&orders, SQL)
 	return orders, err
@@ -102,10 +104,10 @@ func UpdateOrder(order *model.Orders, orderId, userId string) error {
 	// language=SQL
 	sql := `update orders 
                  set
-                     item_discount=$1,
-                     tax=$2,
-                     shipping=$3,
-                     total=$4,
+                     item_discount=COALESCE($1,item_discount),
+                     tax=COALESCE($2,tax),
+                     shipping=COALESCE($3,shipping),
+                     total=COALESCE($4,total),
                      updated_at= now()
                 where id=$5 ::uuid`
 
@@ -125,21 +127,3 @@ func DeleteOrder(orderId, userId *string) error {
 	_, err := common.DB.Exec(delOrder, orderId)
 	return err
 }
-
-//func CreateOrder(order *model.Orders) error {
-
-//language=kSQL
-//	sql := `INSERT INTO orders(
-//          item_discount,
-//            tax,
-//              shipping,
-//                total)
-//      VALUES ($1,$2,$3,$4,$5)
-//               returning id`
-
-//	var orderId string
-
-//	err := common.DB.QueryRowx(sql, order.ItemDiscount, order.Tax, order.Shipping, order.Total).Scan(&orderId)
-//	return err
-//
-//}

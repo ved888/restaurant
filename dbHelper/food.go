@@ -6,7 +6,7 @@ import (
 )
 
 func CreateFood(food *model.Food) error {
-	// language=SQL
+	// language = SQL
 	sql := `INSERT INTO food(
                 
                  name,
@@ -23,15 +23,15 @@ func CreateFood(food *model.Food) error {
 
 func GetAllFood() ([]*model.Food, error) {
 	food := make([]*model.Food, 0)
-	// language=sql
 
+	// language=sql
 	SQL := `SELECT
-           id,
-           name,
-           price,
-           type
-    FROM 
-        food`
+               id,
+               name,
+               price,
+               type
+           FROM 
+               food`
 
 	err := common.DB.Select(&food, SQL)
 	return food, err
@@ -40,14 +40,15 @@ func GetAllFood() ([]*model.Food, error) {
 func GetFoodById(foodId string) (*model.Food, error) {
 	var food model.Food
 
-	// language sql
+	// language=sql
 	sql := `SELECT
-           id,
-           name,
-           price,
-           type
-    FROM 
-        food where id=$1`
+                  id,
+                  name,
+                  price,
+                  type
+              FROM 
+                  food 
+              where id = $1`
 
 	err := common.DB.Get(&food, sql, foodId)
 	if err != nil {
@@ -61,11 +62,11 @@ func GetFoodByOrderItemId(orderItemId string) (*model.Food, error) {
 
 	// language sql
 	sql := `SELECT
-           f.id,
-           f.name,
-           f.price,
-           f.type,
-           fo.order_item_id
+               f.id,
+               f.name,
+               f.price,
+               f.type,
+               fo.order_item_id
     FROM 
         food f join order_item_food fo on 
         f.id=fo.food_id
@@ -84,9 +85,9 @@ func UpdateFood(food *model.Food, id string) error {
 
 	sql := `update food
                set
-                   name=$1,
-                   price=$2,
-                   type=$3,
+                   name=COALESCE($1,name),
+                   price=COALESCE($2,price),
+                   type=COALESCE($3,type),
                    updated_at=now()
                where id=$4 ::uuid `
 

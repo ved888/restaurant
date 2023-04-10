@@ -38,7 +38,7 @@ func CreateOrderOrderItem(db *sqlx.Tx, orderItemId, orderId string) (*uuid.UUID,
 
 func CreateFoodOrderItem(db *sqlx.Tx, foodId, orderItemId string) (*uuid.UUID, error) {
 
-	//language sql
+	// language sql
 
 	sql := `insert into order_item_food(
                            food_id,
@@ -58,11 +58,12 @@ func GetOrderItemById(OrderItemId string) (*model.OrderItem, error) {
 
 	// language sql
 	sql := `SELECT 
+                  id,
                   price,
                   quantity
-          from
+              from 
                   order_item 
-          where id=$1::uuid`
+              where id=$1::uuid`
 
 	err := common.DB.Get(&orderItem, sql, OrderItemId)
 	if err != nil {
@@ -76,13 +77,14 @@ func GetOrderItemByOrderId(OrderItemId string) (*model.OrderItem, error) {
 
 	// language sql
 	sql := `SELECT 
+                  oi.id,
                   oi.price,
                   oi.quantity,
                   oio.order_id
-                  from
+              from
                   order_item oi join order_orderItem oio
-                  on oi.id=oio.orderItem_id 
-          where order_id=$1::uuid`
+               on oi.id=oio.orderItem_id 
+               where order_id=$1::uuid`
 
 	err := common.DB.Get(&orderItem, sql, OrderItemId)
 	if err != nil {
@@ -94,11 +96,12 @@ func GetOrderItemByOrderId(OrderItemId string) (*model.OrderItem, error) {
 func GetAllOrderItem() ([]*model.OrderItem, error) {
 	orderItem := make([]*model.OrderItem, 0)
 	// language=sql
-	SQL := `SELECT 
+	SQL := `SELECT
+                  id,
                   price,
                   quantity
-          from
-               order_item`
+              from
+                  order_item`
 
 	err := common.DB.Select(&orderItem, SQL)
 	return orderItem, err
@@ -110,8 +113,8 @@ func UpdateOrderItem(orderItem *model.OrderItem, Id string) error {
 	// language=sql
 	sql := `update order_item 
                  set
-                     price=$1,
-                     quantity=$2,
+                     price=COALESCE($1,price),
+                     quantity=COALESCE($2,quantity),
                      updated_at=now()
                where id=$3`
 

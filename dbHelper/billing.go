@@ -26,7 +26,7 @@ func CreateBilling(db *sqlx.Tx, billing *model.Billing) (*string, error) {
 }
 
 func CreateUserBilling(db *sqlx.Tx, userID, BillingId string) (*uuid.UUID, error) {
-	// language sql
+	// language=sql
 	sql := `INSERT INTO user_billing(
                          users_id,
                          billing_id
@@ -40,7 +40,7 @@ func CreateUserBilling(db *sqlx.Tx, userID, BillingId string) (*uuid.UUID, error
 }
 
 func CreateOrderBilling(db *sqlx.Tx, orderID, billingId string) (*uuid.UUID, error) {
-	// language sql
+	// language=sql
 	sql := `INSERT INTO Order_billing(
                          order_id,
                          billing_id
@@ -58,13 +58,18 @@ func CreateOrderBilling(db *sqlx.Tx, orderID, billingId string) (*uuid.UUID, err
 func GetBillingById(billingId *string) (*model.Billing, error) {
 	var billing model.Billing
 
-	// language sql
+	// language=sql
 	sql := `SELECT 
-                  id,
-                  type,
-                  mode       
+                  b.id,
+                  b.type,
+                  b.mode,
+                  ob.order_id,
+                  ub.users_id
               from
-                  billing where id=$1::uuid`
+                  billing b join order_billing ob on 
+                  b.id=ob.billing_id join user_billing ub on  
+                      b.id=ub.billing_id
+                   where b.id=$1::uuid`
 
 	err := common.DB.Get(&billing, sql, billingId)
 	if err != nil {
@@ -76,7 +81,7 @@ func GetBillingById(billingId *string) (*model.Billing, error) {
 func GetBillingByUserId(userId *string) (*model.Billing, error) {
 	var billing model.Billing
 
-	// language sql
+	// language=sql
 	sql := `SELECT 
                   b.id,
                   b.type,
@@ -97,13 +102,13 @@ func GetBillingByUserId(userId *string) (*model.Billing, error) {
 func GetBillingByOrderId(orderId *string) (*model.Billing, error) {
 	var billing model.Billing
 
-	// language sql
+	// language=sql
 	sql := `SELECT 
                   b.id,
                   b.type,
                   b.mode,
                   ob.order_id
-              from billing b join order_billing ob on 
+             from billing b join order_billing ob on 
                   b.id=ob.billing_id
                    where order_id=$1::uuid`
 
@@ -116,14 +121,18 @@ func GetBillingByOrderId(orderId *string) (*model.Billing, error) {
 
 func GetAllBilling() ([]*model.Billing, error) {
 	billing := make([]*model.Billing, 0)
-	// language=SQL
 
+	// language=SQL
 	SQL := `SELECT 
-                  id,
-                  type,
-                  mode    
+                  b.id,
+                  b.type,
+                  b.mode,
+                  ob.order_id,
+                  ub.users_id
               from
-                  billing`
+                  billing b join order_billing ob on 
+                  b.id=ob.billing_id join user_billing ub on  
+                      b.id=ub.billing_id`
 
 	err := common.DB.Select(&billing, SQL)
 	return billing, err
@@ -132,23 +141,21 @@ func GetAllBilling() ([]*model.Billing, error) {
 
 func UpdateBilling(billing *model.Billing, billingId, userId string) error {
 
-	// language=SQL
-
+	// language = SQL
 	sql := `update billing 
                  set
-                     type=$1,
-                     mode=$2, 
+                     type=COALESCE($1,type),
+                     mode=COALESCE($2,mode), 
                      updated_at=now()
                  where id=$3::uuid`
 
 	_, err := common.DB.Exec(sql, billing.Type, billing.Mode, &billingId)
-
 	return err
 
 }
 func DeleteBillingById(billingId, userId *string) error {
 
-	// language SQL
+	// language=SQL
 	SQL := `Update
               billing
               set 
@@ -162,7 +169,7 @@ func DeleteBillingById(billingId, userId *string) error {
 
 func DeleteBilling(userId *string) error {
 
-	// language SQL
+	// language=SQL
 	SQL := `Update
               billing
               set 
@@ -173,21 +180,3 @@ func DeleteBilling(userId *string) error {
 	return err
 
 }
-
-//func GetBillingById(billingId, userId *string) (*model.Billing, error) {
-//	var billing model.Billing
-
-// language sql
-//	sql1 := `SELECT
-//                  id,
-//                  type,
-//                  mode
-//              from
-//                  billing where id=$1::uuid`
-
-//	err := common.DB.Get(&billing, sql, billingId)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &billing, err
-//}

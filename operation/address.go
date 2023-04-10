@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"restaurant/common"
@@ -19,13 +20,15 @@ func CreateAddress(w http.ResponseWriter, r *http.Request) {
 	// read the userId from the path param
 	userId := mux.Vars(r)["userId"]
 	if userId == "" {
-		logrus.Error("userId is empty") //checking userId empty or not
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("CreateAddress: userId is empty") // checking userId empty or not
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "CreateAddress: userId is empty", nil)
 		return
 	}
+
 	err := json.NewDecoder(r.Body).Decode(&address)
 	if err != nil {
-		logrus.Error("error in decode create address", err)
+		logrus.Error("CreateAddress: failed to decode address for create", err)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "CreateAddress: failed to decode address for create", nil)
 		return
 	}
 
@@ -39,6 +42,7 @@ func CreateAddress(w http.ResponseWriter, r *http.Request) {
 		responseBody := map[string]string{"error": validationErrors.Error()}
 		logrus.Error(responseBody)
 		if err := json.NewEncoder(w).Encode(responseBody); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 		}
 		return
 	}
@@ -47,77 +51,72 @@ func CreateAddress(w http.ResponseWriter, r *http.Request) {
 		// create the address entry
 		addressID, err := dbHelper.CreateAddress(tx, &address)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "CreateAddress: failed to create address entry")
 		}
 
 		// create the user address relation entry
 		_, err = dbHelper.CreateUserAddress(tx, userId, *addressID)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "CreateAddress: failed to create user address relation entry")
 		}
 		return nil
 	})
 
 	if txErr != nil {
-		logrus.Error("failed to create address for the user", txErr)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("CreateAddress: failed to create address for the user", txErr)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "CreateAddress: failed to create address for the user", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
+	common.ReturnResponse(w, "success", http.StatusCreated, "", address)
 }
 
 func GetAddressByAddressId(w http.ResponseWriter, r *http.Request) {
 	// read user id from path param
 	userId := mux.Vars(r)["userId"]
 	if userId == "" {
-		logrus.Error("userId is empty") //checking userId empty or not
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	// read address id from path param
-	addressId := mux.Vars(r)["addressId"]
-	if addressId == "" {
-		logrus.Error("addressId is empty") //checking addressId empty or not
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	// Get address by the userId and addressId
-	result, err := dbHelper.GetAddressByAddressId(&addressId)
-	if err != nil {
-		logrus.Error("failed to get address", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetAddressByAddressId: userId is empty") // checking userId empty or not
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "GetAddressByAddressId: userId is empty", nil)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(&result)
-	if err != nil {
-		logrus.Error("failed to encode the address ", err)
+	// read address id from path param
+	addressId := mux.Vars(r)["addressId"]
+	if addressId == "" {
+		logrus.Error("GetAddressByAddressId: addressId is empty") // checking addressId empty or not
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "GetAddressByAddressId: addressId is empty", nil)
 		return
 	}
+
+	// Get address by the userId and addressId
+	result, err := dbHelper.GetAddressByAddressId(&addressId)
+	if err != nil {
+		logrus.Error("GetAddressByAddressId: failed to get address", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetAddressByAddressId: failed to get address", nil)
+		return
+	}
+
+	common.ReturnResponse(w, "success", http.StatusOK, "", result)
+
 }
 
 func GetAddressByUserId(w http.ResponseWriter, r *http.Request) {
 	// read user id from path param
 	userId := mux.Vars(r)["userId"]
 	if userId == "" {
-		logrus.Error("userId is empty") //checking userId empty or not
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("GetAddressByUserId: userId is empty") // checking userId empty or not
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "GetAddressByUserId: userId is empty", nil)
 		return
 	}
 
 	// Get address by the userId and addressId
 	result, err := dbHelper.GetAddressByUserId(&userId)
 	if err != nil {
-		logrus.Error("failed to get address", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetAddressByUserId: failed to get address", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetAddressByUserId: failed to get address", nil)
 		return
 	}
-	err = json.NewEncoder(w).Encode(&result)
-	if err != nil {
-		logrus.Error("failed to encode the address ", err)
-		return
-	}
+
+	common.ReturnResponse(w, "success", http.StatusOK, "", result)
 
 }
 
@@ -126,15 +125,17 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&address)
 	if err != nil {
-		logrus.Error("error in decoding billing update", err)
+		logrus.Error("UpdateAddress: failed to decoding billing update", err)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "UpdateAddress: failed to decoding billing update", nil)
 		return
 	}
+
 	// read the userId from path param
 	userId := mux.Vars(r)["userId"]
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(userId); uuidErr != nil {
-		logrus.Error("Failed to parse the address id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("UpdateAddress: Failed to parse the user id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "UpdateAddress: Failed to parse the user id to uuid", nil)
 		return
 	}
 	// read the address id from the path params
@@ -142,19 +143,18 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(addressId); uuidErr != nil {
-		logrus.Error("Failed to parse the address id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("UpdateAddress: Failed to parse the address id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "UpdateAddress: Failed to parse the address id to uuid", nil)
 		return
 	}
 
 	// update the address by use of the userId and addressId
 	err = dbHelper.UpdateAddress(&address, addressId, userId)
 	if err != nil {
-		logrus.Error("error in update address query", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("UpdateAddress: failed to update address query", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateAddress: failed to update address query", nil)
 		return
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -163,15 +163,15 @@ func DeleteAddressByAddressId(w http.ResponseWriter, r *http.Request) {
 	// read the address id from path param
 	addressId := mux.Vars(r)["addressId"]
 	if addressId == "" {
-		logrus.Error("addressId is empty") //checking addressId empty or not
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("DeleteAddressByAddressId: addressId is empty") // checking addressId empty or not
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "DeleteAddressByAddressId: addressId is empty", nil)
 		return
 	}
 	// delete the allAddress for particular user
 	err := dbHelper.DeleteAddressById(&addressId)
 	if err != nil {
-		logrus.Error("failed to delete all address for userId", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("DeleteAddressByAddressId: failed to delete all address for userId", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteAddressByAddressId: failed to delete all address for userId", nil)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -183,15 +183,15 @@ func DeleteAddressByUserId(w http.ResponseWriter, r *http.Request) {
 
 	// check the id is of uuid type or not
 	if _, uuidErr := uuid.Parse(userId); uuidErr != nil {
-		logrus.Error("Failed to parse the user id to uuid", uuidErr)
-		w.WriteHeader(http.StatusBadRequest)
+		logrus.Error("DeleteAddressByUserId: Failed to parse the user id to uuid", uuidErr)
+		common.ReturnResponse(w, "failed", http.StatusBadRequest, "DeleteAddressByUserId: Failed to parse the user id to uuid", nil)
 		return
 	}
 	// delete the address by use of the id
 	err := dbHelper.DeleteAddressByUserId(&userId)
 	if err != nil {
-		logrus.Error("error in delete address query", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("DeleteAddressByUserId: failed to delete address query", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteAddressByUserId: failed to delete address query", nil)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -202,14 +202,17 @@ func GetAllAddress(w http.ResponseWriter, r *http.Request) {
 	// get all the address list
 	addressList, err := dbHelper.GetAllAddress()
 	if err != nil {
-		logrus.Error("error in getAll ", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Error("GetAllAddress: failed to getAll ", err)
+		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "GetAllAddress: failed to getAll", nil)
 		return
 	}
-	err = json.NewEncoder(w).Encode(&addressList)
-	if err != nil {
-		logrus.Error("error in encode getAll address", err)
-		return
-	}
+
+	//err = json.NewEncoder(w).Encode(&addressList)
+	//if err != nil {
+	//	logrus.Error("GetAllAddress: failed to encode getAll address", err)
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	return
+	//}
+	common.ReturnResponse(w, "success", http.StatusOK, "", addressList)
 
 }

@@ -6,6 +6,7 @@ import (
 	_ "github.com/gorilla/mux"
 	_ "log"
 	"net/http"
+	"restaurant/middleware"
 )
 
 func Handler(r *mux.Router) {
@@ -13,9 +14,12 @@ func Handler(r *mux.Router) {
 	user := r.PathPrefix("/user").Subrouter()
 	{
 		user.Path("/").Methods(http.MethodPost).HandlerFunc(CreateUser)
+		user.Path("/login").Methods(http.MethodPost).HandlerFunc(Login)
 		user.Path("/").Methods(http.MethodGet).HandlerFunc(GetAllUser)
 		userAction := user.PathPrefix("/{userId}").Subrouter()
+		userAction.Use(middleware.ValidateJWTV2)
 		userAction.Path("/").Methods(http.MethodPut).HandlerFunc(UpdateUser)
+		//userAction.Path("/").Methods(http.MethodPut).Handler(middleware.ValidateJWT(UpdateUser))
 		userAction.Path("/").Methods(http.MethodDelete).HandlerFunc(UserDelete)
 		userAction.Path("/").Methods(http.MethodGet).HandlerFunc(GetUserById)
 
@@ -25,10 +29,10 @@ func Handler(r *mux.Router) {
 			address.Path("/").HandlerFunc(DeleteAddressByUserId).Methods(http.MethodDelete)
 			address.Path("/user").HandlerFunc(GetAddressByUserId).Methods(http.MethodGet)
 			address.Path("/{addressId}").HandlerFunc(GetAddressByAddressId).Methods(http.MethodGet)
-			//address.Path("/list").HandlerFunc(GetAllAddress).Methods(http.MethodGet)
 			address.Path("/{addressId}").HandlerFunc(UpdateAddress).Methods(http.MethodPut)
 			address.Path("/{addressId}").HandlerFunc(DeleteAddressByAddressId).Methods(http.MethodDelete)
 		}
+
 		billing := userAction.PathPrefix("/billing").Subrouter()
 		{
 			billing.Path("/").HandlerFunc(CreateBilling).Methods(http.MethodPost)
@@ -53,24 +57,26 @@ func Handler(r *mux.Router) {
 		booking := userAction.PathPrefix("/booking").Subrouter()
 		{
 			booking.Path("/").HandlerFunc(CreateBooking).Methods(http.MethodPost)
-			booking.Path("/{bookingId}").HandlerFunc(GetBookingByBookingId).Methods(http.MethodGet)
 			booking.Path("/").HandlerFunc(GetBookingByUserId).Methods(http.MethodGet)
+			booking.Path("/{bookingId}").HandlerFunc(GetBookingByBookingId).Methods(http.MethodGet)
 			booking.Path("/{bookingId}").HandlerFunc(UpdateBooking).Methods(http.MethodPut)
-			//booking.Path("/{bookingId").HandlerFunc(DeleteBooking).Methods(http.MethodDelete)
 		}
 	}
 	booking := r.PathPrefix("/booking").Subrouter()
 	booking.Path("/").HandlerFunc(GetAllBooking).Methods(http.MethodGet)
 	booking.Path("/{bookingId}").HandlerFunc(DeleteBooking).Methods(http.MethodDelete)
 
+	address := r.PathPrefix("/address").Subrouter()
+	address.Path("/list").HandlerFunc(GetAllAddress).Methods(http.MethodGet)
+
 	food := r.PathPrefix("/food").Subrouter()
 	{
 		food.Path("/").HandlerFunc(CreateFood).Methods(http.MethodPost)
 		food.Path("/").HandlerFunc(GetAllFood).Methods(http.MethodGet)
-		food.Path("/{orderItemId}").HandlerFunc(GetFoodByOrderItemId).Methods(http.MethodGet)
+		food.Path("/{orderItemId}/food").HandlerFunc(GetFoodByOrderItemId).Methods(http.MethodGet)
 		food.Path("/{foodId}").HandlerFunc(GetFoodById).Methods(http.MethodGet)
-		food.Path("/{id}").HandlerFunc(FoodDelete).Methods(http.MethodDelete)
-		food.Path("/{id}").HandlerFunc(FoodUpdate).Methods(http.MethodPut)
+		food.Path("/{id}").HandlerFunc(DeleteFood).Methods(http.MethodDelete)
+		food.Path("/{id}").HandlerFunc(UpdateFood).Methods(http.MethodPut)
 	}
 
 	table := r.PathPrefix("/table").Subrouter()
@@ -88,7 +94,7 @@ func Handler(r *mux.Router) {
 		orderItem.Path("/").HandlerFunc(CreateOrderItem).Methods(http.MethodPost)
 		orderItem.Path("/").HandlerFunc(GetAllOrderItem).Methods(http.MethodGet)
 		orderItem.Path("/{orderId}").HandlerFunc(GetOrderItemByOrderId).Methods(http.MethodGet)
-		orderItem.Path("/{id}").HandlerFunc(GetOrderItemById).Methods(http.MethodGet)
+		orderItem.Path("/{id}/orderItem").HandlerFunc(GetOrderItemById).Methods(http.MethodGet)
 		orderItem.Path("/{id}").HandlerFunc(UpdateOrderItem).Methods(http.MethodPut)
 		orderItem.Path("/{id}").HandlerFunc(DeleteOrderItem).Methods(http.MethodDelete)
 	}

@@ -10,7 +10,7 @@ type Billing struct {
 	Id        uuid.UUID `json:"id" db:"id"`
 	Type      int       `json:"type" db:"type" validate:"required"`
 	Mode      string    `json:"mode" db:"mode" validate:"required"`
-	OrdersId  uuid.UUID `json:"ordersId" db:"orders_id"`
+	OrdersId  uuid.UUID `json:"ordersId" db:"order_id"`
 	UsersId   uuid.UUID `json:"usersId" db:"users_id"`
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt null.Time `json:"updatedAt" db:"updated_at"`

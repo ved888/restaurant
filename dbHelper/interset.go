@@ -22,19 +22,19 @@ func CreateInterest(db *sqlx.Tx, interest *model.Interest) (*uuid.UUID, error) {
 	return &interestId, err
 }
 
-func UpdateInterest(interest *model.Interest, interestId string) error {
+func UpdateInterest(DB *sqlx.Tx, interest *model.Interest, userID string) error {
 
 	// language=sql
 	SQL := `update interest
                 set
-                    name = $1,
-                    type = $2,
-                    updated_at=now()
+                    name = COALESCE($1,name),
+                    type = COALESCE($2,type),
+                    updated_at = now()
             where id in (select interest_id from relation_table where users_id = $3)`
 
-	arg := []interface{}{interest.Name, interest.Type, interestId}
+	arg := []interface{}{interest.Name, interest.Type, userID}
 
-	_, err := common.DB.Exec(SQL, arg...)
+	_, err := DB.Exec(SQL, arg...)
 	return err
 }
 
@@ -44,10 +44,10 @@ func GetAllInterest() ([]*model.InterestUser, error) {
 	// language=sql
 
 	SQL := `SELECT
-           i.id,
-           i.name,
-           i.type,
-           ui.users_id as user_id
+               i.id,
+               i.name,
+               i.type,
+               ui.users_id as user_id
            FROM
                 interest i
            inner join 
@@ -65,9 +65,9 @@ func GetInterestByUserId(userId *string) (*model.Interest, error) {
 	// language=sql
 
 	SQL := `SELECT
-           i.id,
-           i.name,
-           i.type
+              i.id,
+              i.name, 
+              i.type
             FROM
                 interest i
            inner join 
@@ -86,7 +86,7 @@ func GetInterestByUserId(userId *string) (*model.Interest, error) {
 	return &interest, nil
 }
 
-func DeleteInterest(interestId *string) error {
+func DeleteInterest(DB *sqlx.Tx, interestId *string) error {
 	// language=sql
 	sql := `update
 	        interest
@@ -94,6 +94,6 @@ func DeleteInterest(interestId *string) error {
 	        deleted_at=now()
 	        where id in (select interest_id from relation_table where users_id=$1) `
 
-	_, err := common.DB.Exec(sql, interestId)
+	_, err := DB.Exec(sql, interestId)
 	return err
 }
