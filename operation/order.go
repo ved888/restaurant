@@ -49,13 +49,11 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 		// create the order entry
 		orderId, err := dbHelper.CreateOrder(tx, &order)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			return errors.Wrap(err, "CreateOrder: failed to create the order entry")
 		}
 		// create the userOrder relation entry
 		_, err = dbHelper.CreateUserOrder(tx, userId, *orderId)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			return errors.Wrap(err, "CreateOrder: failed to create the user order relation entry")
 		}
 		return err
@@ -151,8 +149,7 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateOrder: Failed to update order entry", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", order)
 }
 
 func DeleteOrderByUserId(w http.ResponseWriter, r *http.Request) {
@@ -181,7 +178,7 @@ func DeleteOrderByUserId(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteOrderByUserId: Failed to delete order entry", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 }
 
 func GetAllOrder(w http.ResponseWriter, r *http.Request) {

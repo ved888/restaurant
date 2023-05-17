@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"restaurant/common"
@@ -76,7 +77,7 @@ func ValidateJWTV2(next http.Handler) http.Handler {
 			return []byte(common.SecretKey), nil
 		})
 		if err != nil {
-			common.ReturnResponse(w, "failed", http.StatusBadRequest, "couldn't parse token", nil)
+			common.ReturnResponse(w, "failed", http.StatusUnauthorized, "couldn't parse token", nil)
 			return
 		}
 
@@ -89,8 +90,8 @@ func ValidateJWTV2(next http.Handler) http.Handler {
 		_, ok := token.Claims.(*jwt.StandardClaims)
 		if !ok {
 			err = errors.New("couldn't parse claims")
-			log.Fatal("error occurred during parsing the token", err.Error())
-			common.ReturnResponse(w, "failed", http.StatusBadRequest, "couldn't parse claims", nil)
+			logrus.Error("error occurred during parsing the token", err.Error())
+			common.ReturnResponse(w, "failed", http.StatusUnauthorized, "couldn't parse claims", nil)
 			return
 
 		}
@@ -102,7 +103,7 @@ func ValidateJWTV2(next http.Handler) http.Handler {
 			err = errors.New("couldn't handle this token")
 			fmt.Printf("Couldn't handle this token:", err.Error())
 
-			common.ReturnResponse(w, "failed", http.StatusBadRequest, "Couldn't handle this token", nil)
+			common.ReturnResponse(w, "failed", http.StatusUnauthorized, "Couldn't handle this token", nil)
 			return
 		}
 		//common.ReturnResponse(w, "failed", http.StatusUnauthorized, "Unauthorized user", nil)

@@ -1,11 +1,10 @@
 package operation
 
 import (
-	_ "fmt"
 	"github.com/gorilla/mux"
-	_ "github.com/gorilla/mux"
-	_ "log"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
+	_ "restaurant/docs"
 	"restaurant/middleware"
 )
 
@@ -98,5 +97,6 @@ func Handler(r *mux.Router) {
 		orderItem.Path("/{id}").HandlerFunc(UpdateOrderItem).Methods(http.MethodPut)
 		orderItem.Path("/{id}").HandlerFunc(DeleteOrderItem).Methods(http.MethodDelete)
 	}
+	r.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 
 }

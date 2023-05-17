@@ -18,6 +18,18 @@ import (
 	"time"
 )
 
+// CreateUser
+// @Summary create user  for particular user.
+// @Description create user for particular user and generate a request_id for further use.
+// @Tags user file
+// @Param userRequest body model.UserInterestRequest true "create user "
+// @Accept */*
+// @Produce json
+// @Success 200 {object} common.Response{userRequest}
+// @Failure 400 {object} common.Response{error=string}
+// @Failure 404 {object} common.Response{error=string}
+// @Failure 500 {object} common.Response{error=string}
+// @Router /user/ [post]
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var userRequest model.UserInterestRequest
 
@@ -146,6 +158,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// UpdateUser
+// @Summary update user by ID.
+// @Description update user for particular user and generate a request_id for further use.
+// @Tags user file
+// @Param id path string true "user ID"
+// @Accept */*
+// @Produce json
+// @Success 200 {object} common.Response{userRequest} "desc"
+// @Failure 400 {object} common.Response{error=string}
+// @Failure 404 {object} common.Response{error=string}
+// @Failure 500 {object} common.Response{error=string}
+// @Router /user/{userId}/ [put]
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var usersRequest model.UserInterestRequest
 
@@ -187,7 +211,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return errors.Wrap(err, "updateUser: failed to update interest entry")
 		}
-
 		return err
 	})
 

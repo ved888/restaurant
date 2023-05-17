@@ -20,6 +20,7 @@ func ReturnResponse(w http.ResponseWriter, status string, statusCode int, error 
 	result.StatusCode = statusCode
 	result.Error = error
 	result.Data = data
+
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(result)
 	return

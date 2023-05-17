@@ -133,7 +133,7 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", food)
 }
 
 func DeleteFood(w http.ResponseWriter, r *http.Request) {
@@ -153,6 +153,6 @@ func DeleteFood(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteFood: Failed to delete food entry", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 
 }

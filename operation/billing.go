@@ -71,8 +71,7 @@ func CreateBilling(w http.ResponseWriter, r *http.Request) {
 		// create the order billing relation entry
 		_, err = dbHelper.CreateOrderBilling(tx, orderId, *billingID)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return err
+			return errors.Wrap(err, "CreateBilling: failed to create the order billing relation entry")
 		}
 		return nil
 	})
@@ -209,7 +208,7 @@ func UpdateBilling(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateBilling: failed to updating billing entry ", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", billing)
 }
 
 func DeleteBillingById(w http.ResponseWriter, r *http.Request) {
@@ -239,8 +238,7 @@ func DeleteBillingById(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteBillingById: failed to delete billing entry", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 }
 
 func DeleteBilling(w http.ResponseWriter, r *http.Request) {
@@ -261,6 +259,5 @@ func DeleteBilling(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteBilling: failed to delete billing query", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 }

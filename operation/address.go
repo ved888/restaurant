@@ -155,7 +155,8 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateAddress: failed to update address query", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", address)
+	//w.WriteHeader(http.StatusNoContent)
 }
 
 func DeleteAddressByAddressId(w http.ResponseWriter, r *http.Request) {
@@ -174,7 +175,8 @@ func DeleteAddressByAddressId(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteAddressByAddressId: failed to delete all address for userId", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
+	//w.WriteHeader(http.StatusNoContent)
 }
 
 func DeleteAddressByUserId(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +196,8 @@ func DeleteAddressByUserId(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteAddressByUserId: failed to delete address query", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
+	//w.WriteHeader(http.StatusNoContent)
 }
 
 func GetAllAddress(w http.ResponseWriter, r *http.Request) {
@@ -207,12 +210,5 @@ func GetAllAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(&addressList)
-	//if err != nil {
-	//	logrus.Error("GetAllAddress: failed to encode getAll address", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", addressList)
-
 }

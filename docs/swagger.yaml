@@ -1,0 +1,177 @@
+basePath: /
+definitions:
+  common.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      status:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  model.Interest:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  model.UserInterestRequest:
+    properties:
+      interest:
+        $ref: '#/definitions/model.Interest'
+      user:
+        $ref: '#/definitions/model.Users'
+    type: object
+  model.Users:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      emailId:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      phone:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - emailId
+    - firstName
+    - lastName
+    - middleName
+    - phone
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: vedprakashv888@gmail.com
+    name: Ved Prakash Verma
+    url: http://www.swagger.io/support
+  description: This is a demo http server to serve rest apis.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: restaurant API
+  version: "1.0"
+paths:
+  /user/:
+    post:
+      consumes:
+      - '*/*'
+      description: create user for particular user and generate a request_id for further
+        use.
+      parameters:
+      - description: 'create user '
+        in: body
+        name: userRequest
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserInterestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: create user  for particular user.
+      tags:
+      - user file
+  /user/{userId}/:
+    put:
+      consumes:
+      - '*/*'
+      description: update user for particular user and generate a request_id for further
+        use.
+      parameters:
+      - description: user ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: desc
+          schema:
+            $ref: '#/definitions/common.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: update user by ID.
+      tags:
+      - user file
+schemes:
+- https
+swagger: "2.0"

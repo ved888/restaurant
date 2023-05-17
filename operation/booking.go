@@ -102,12 +102,6 @@ func GetBookingByBookingId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(&resp)
-	//if err != nil {
-	//	logrus.Error("GetBookingByBookingId: failed to encode the booking ", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
 }
@@ -131,12 +125,6 @@ func GetBookingByUserId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(&resp)
-	//if err != nil {
-	//	logrus.Error("GetBookingByUserId: failed to encode the booking ", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
 }
@@ -151,12 +139,6 @@ func GetAllBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(bookingList)
-	//if err != nil {
-	//	logrus.Error("GetAllBooking: failed to encoding getAll booking", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", bookingList)
 
 }
@@ -194,7 +176,8 @@ func UpdateBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusCreated, "", booking)
+
 }
 
 func DeleteBooking(w http.ResponseWriter, r *http.Request) {
@@ -214,6 +197,6 @@ func DeleteBooking(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteBooking: failed to deleted booking", nil)
 		return
 	}
+	common.ReturnResponse(w, "success", http.StatusCreated, "", nil)
 
-	w.WriteHeader(http.StatusNoContent)
 }

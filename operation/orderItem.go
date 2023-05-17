@@ -83,7 +83,6 @@ func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
 	}
 	common.ReturnResponse(w, "success", http.StatusCreated, "", orderItem)
 
-	//w.WriteHeader(http.StatusCreated)
 }
 
 func GetOrderItemById(w http.ResponseWriter, r *http.Request) {
@@ -103,12 +102,6 @@ func GetOrderItemById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(&resp)
-	//if err != nil {
-	//	logrus.Error("GetOrderItemById: failed to encode the orderItem ", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
 }
@@ -130,12 +123,6 @@ func GetOrderItemByOrderId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(&resp)
-	//if err != nil {
-	//	logrus.Error("GetOrderItemByOrderId: failed to encode the orderItem ", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", resp)
 
 }
@@ -150,15 +137,10 @@ func GetAllOrderItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = json.NewEncoder(w).Encode(orderItemList)
-	//if err != nil {
-	//	logrus.Error("GetAllOrderItem: failed to encode getAll orderItem", err)
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 	common.ReturnResponse(w, "success", http.StatusOK, "", orderItemList)
 
 }
+
 func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 	var orderItem model.OrderItem
 
@@ -186,8 +168,7 @@ func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateOrderItem: failed to update orderItem", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", orderItem)
 }
 
 func DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
@@ -208,6 +189,5 @@ func DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteOrderItem: Failed to delete orderItem", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 }

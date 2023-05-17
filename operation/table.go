@@ -127,8 +127,7 @@ func UpdateTable(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "UpdateTable: Failed to update table", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", table)
 }
 
 func DeleteTable(w http.ResponseWriter, r *http.Request) {
@@ -149,6 +148,5 @@ func DeleteTable(w http.ResponseWriter, r *http.Request) {
 		common.ReturnResponse(w, "failed", http.StatusInternalServerError, "DeleteTable: Failed to delete table entry", nil)
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	common.ReturnResponse(w, "success", http.StatusNoContent, "", nil)
 }
